@@ -1,0 +1,66 @@
+{
+  "name": "amazon-connect-web-app",
+  "version": "1.0.0",
+  "description": "Amazon Connect Web Application with multi-channel communication support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "extract-chat-ids": "node scripts/extract-chat-widget-ids.js",
+    "check-env": "node scripts/check-environment.js",
+    "generate-cdk-config": "node scripts/generate-cdk-config.js",
+    "update-contact-flows": "node scripts/update-contact-flows.js",
+    "cdk:deploy": "npm run update-contact-flows && npx aws-cdk deploy --all --require-approval never --outputs-file cdk-outputs.json && node scripts/update-env-from-cdk-outputs.js && npm run generate-config",
+    "deploy-to-s3": "node scripts/deploy-to-s3.js",
+    "start": "npm run build:dev && node server.js",
+    "generate-config": "node scripts/generate-config.js",
+    "build": "npm run generate-config && webpack --mode production",
+    "build:production": "npm run generate-config && webpack --mode production && node scripts/embed-config.js",
+    "build:dev": "npm run generate-config && webpack --mode development",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "amazon-connect",
+    "webrtc",
+    "chat",
+    "chime-sdk"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "20.19.33",
+    "cdk-nag": "2.37.55",
+    "ts-loader": "9.5.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.3.3",
+    "webpack": "5.90.3",
+    "webpack-cli": "5.1.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "3.980.0",
+    "@aws-sdk/client-cognito-identity-provider": "3.980.0",
+    "@aws-sdk/client-connect": "3.980.0",
+    "@aws-sdk/client-connectparticipant": "3.980.0",
+    "@aws-sdk/client-s3": "3.980.0",
+    "@aws-sdk/client-secrets-manager": "3.987.0",
+    "@aws-sdk/client-ssm": "3.987.0",
+    "@aws-sdk/credential-providers": "3.980.0",
+    "amazon-chime-sdk-js": "3.21.0",
+    "amazon-cognito-identity-js": "6.3.16",
+    "aws-cdk": "^2.1110.0",
+    "aws-cdk-lib": "2.241.0",
+    "constructs": "10.5.0",
+    "dotenv": "17.2.3",
+    "minimatch": "10.2.4"
+  },
+  "overrides": {
+    "minimatch": "10.2.4",
+    "aws-cdk-lib": {
+      "minimatch": "10.2.4"
+    },
+    "fast-xml-parser": "5.4.1"
+  },
+  "resolutions": {
+    "minimatch": "10.2.4",
+    "fast-xml-parser": "5.4.1"
+  }
+}

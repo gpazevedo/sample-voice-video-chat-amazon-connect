@@ -1,0 +1,152 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "413907b5-7067-49f8-a488-cc6672942bc5",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 40,
+      "y": 40
+    },
+    "ActionMetadata": {
+      "413907b5-7067-49f8-a488-cc6672942bc5": {
+        "position": {
+          "x": 129.6,
+          "y": 119.2
+        }
+      },
+      "3ad16763-064d-4acd-b455-5b61d0235de6": {
+        "position": {
+          "x": 359.2,
+          "y": 94.4
+        },
+        "parameters": {
+          "TextToSpeechVoice": {
+            "languageCode": "en-US"
+          }
+        },
+        "overrideConsoleVoice": false
+      },
+      "90d535eb-9dc7-4459-9e10-5268d2f4ae2a": {
+        "position": {
+          "x": 598.4,
+          "y": 95.2
+        }
+      },
+      "b850bbb6-5ee8-4666-9eb5-d9746397e12f": {
+        "position": {
+          "x": 855.2,
+          "y": 96
+        },
+        "parameters": {
+          "QueueId": {
+            "displayName": "BasicQueue"
+          }
+        },
+        "queue": {
+          "text": "BasicQueue"
+        }
+      },
+      "9a70f2d3-6b24-47fb-a36d-11019af9c69d": {
+        "position": {
+          "x": 1119.2,
+          "y": 91.2
+        }
+      },
+      "ee22b4ef-5a11-423b-afbd-b2816a12b0a1": {
+        "position": {
+          "x": 1408.8,
+          "y": 112.8
+        }
+      }
+    },
+    "Annotations": [],
+    "name": "WebRTCQueueRouting",
+    "description": "",
+    "type": "contactFlow",
+    "status": "published",
+    "hash": {}
+  },
+  "Actions": [
+    {
+      "Parameters": {
+        "FlowLoggingBehavior": "Enabled"
+      },
+      "Identifier": "413907b5-7067-49f8-a488-cc6672942bc5",
+      "Type": "UpdateFlowLoggingBehavior",
+      "Transitions": {
+        "NextAction": "3ad16763-064d-4acd-b455-5b61d0235de6"
+      }
+    },
+    {
+      "Parameters": {
+        "TextToSpeechVoice": "Joanna"
+      },
+      "Identifier": "3ad16763-064d-4acd-b455-5b61d0235de6",
+      "Type": "UpdateContactTextToSpeechVoice",
+      "Transitions": {
+        "NextAction": "90d535eb-9dc7-4459-9e10-5268d2f4ae2a",
+        "Errors": [
+          {
+            "NextAction": "90d535eb-9dc7-4459-9e10-5268d2f4ae2a",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "Text": "This is Any Company Customer Service powered by Amazon Connect. You're using our custom in-app, web, and video calling capabilities. You can initiate a chat contact routed to the same agent handling your call, enabling seamless data and file exchange during the conversation."
+      },
+      "Identifier": "90d535eb-9dc7-4459-9e10-5268d2f4ae2a",
+      "Type": "MessageParticipant",
+      "Transitions": {
+        "NextAction": "b850bbb6-5ee8-4666-9eb5-d9746397e12f",
+        "Errors": [
+          {
+            "NextAction": "b850bbb6-5ee8-4666-9eb5-d9746397e12f",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "QueueId": "{{QUEUE_ARN}}"
+      },
+      "Identifier": "b850bbb6-5ee8-4666-9eb5-d9746397e12f",
+      "Type": "UpdateContactTargetQueue",
+      "Transitions": {
+        "NextAction": "9a70f2d3-6b24-47fb-a36d-11019af9c69d",
+        "Errors": [
+          {
+            "NextAction": "9a70f2d3-6b24-47fb-a36d-11019af9c69d",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {},
+      "Identifier": "9a70f2d3-6b24-47fb-a36d-11019af9c69d",
+      "Type": "TransferContactToQueue",
+      "Transitions": {
+        "NextAction": "ee22b4ef-5a11-423b-afbd-b2816a12b0a1",
+        "Errors": [
+          {
+            "NextAction": "ee22b4ef-5a11-423b-afbd-b2816a12b0a1",
+            "ErrorType": "QueueAtCapacity"
+          },
+          {
+            "NextAction": "ee22b4ef-5a11-423b-afbd-b2816a12b0a1",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {},
+      "Identifier": "ee22b4ef-5a11-423b-afbd-b2816a12b0a1",
+      "Type": "DisconnectParticipant",
+      "Transitions": {}
+    }
+  ]
+}

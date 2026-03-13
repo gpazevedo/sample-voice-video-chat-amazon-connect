@@ -1,0 +1,302 @@
+/**
+ * Error Display Component Styles
+ * 
+ * Provides styling for credential error display with support for:
+ * - Different error types (initialization, refresh, permission, network)
+ * - User-friendly messages and action buttons
+ * - Prominent but not intrusive design
+ */
+
+/* Error Container */
+.connect-error-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  max-width: 600px;
+  width: 90%;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Error Message Card */
+.error-message {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Error Header */
+.error-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: #ffffff;
+  position: relative;
+}
+
+.error-icon {
+  font-size: 28px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.error-title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.error-code {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.9;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.error-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.error-close:active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Error Body */
+.error-body {
+  padding: 20px;
+  color: #333333;
+}
+
+.error-text {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+}
+
+.error-details {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f5f5f5;
+  border-left: 3px solid #e0e0e0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666666;
+  border-radius: 4px;
+}
+
+/* Error Actions */
+.error-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.error-action-btn {
+  padding: 10px 20px;
+  background: #2196f3;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.error-action-btn:hover {
+  background: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.error-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Error Type Specific Styling */
+
+/* Initialization/Configuration Errors */
+.error-initialization .error-header {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.error-initialization .error-details {
+  border-left-color: #ff9800;
+}
+
+/* Refresh/Expired Errors */
+.error-refresh .error-header {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+}
+
+.error-refresh .error-details {
+  border-left-color: #9c27b0;
+}
+
+.error-refresh .error-action-btn {
+  background: #9c27b0;
+}
+
+.error-refresh .error-action-btn:hover {
+  background: #7b1fa2;
+}
+
+/* Permission Denied Errors */
+.error-permission .error-header {
+  background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+}
+
+.error-permission .error-details {
+  border-left-color: #f44336;
+}
+
+.error-permission .error-action-btn {
+  background: #757575;
+  cursor: not-allowed;
+}
+
+.error-permission .error-action-btn:hover {
+  background: #757575;
+  transform: none;
+}
+
+/* Network Errors */
+.error-network .error-header {
+  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+}
+
+.error-network .error-details {
+  border-left-color: #ff5722;
+}
+
+.error-network .error-action-btn {
+  background: #ff5722;
+}
+
+.error-network .error-action-btn:hover {
+  background: #e64a19;
+}
+
+/* Recoverable vs Fatal */
+.error-message.fatal {
+  border: 2px solid #d32f2f;
+}
+
+.error-message.recoverable {
+  border: 2px solid #ffa726;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .connect-error-container {
+    top: 10px;
+    width: 95%;
+  }
+
+  .error-header {
+    padding: 12px 16px;
+  }
+
+  .error-icon {
+    font-size: 24px;
+    margin-right: 10px;
+  }
+
+  .error-title {
+    font-size: 14px;
+  }
+
+  .error-code {
+    font-size: 11px;
+  }
+
+  .error-body {
+    padding: 16px;
+  }
+
+  .error-text {
+    font-size: 13px;
+  }
+
+  .error-details {
+    font-size: 12px;
+    padding: 10px;
+  }
+
+  .error-action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Accessibility */
+.error-close:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.error-action-btn:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* Animation for dismissal */
+.error-message.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}

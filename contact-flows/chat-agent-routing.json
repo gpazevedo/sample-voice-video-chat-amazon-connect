@@ -1,0 +1,126 @@
+{
+  "Version": "2019-10-30",
+  "StartAction": "6539f299-cc17-4b6f-bd09-ad621c8418da",
+  "Metadata": {
+    "entryPointPosition": {
+      "x": 20,
+      "y": 20
+    },
+    "ActionMetadata": {
+      "7d6d8d8c-4bb0-470e-afc4-59eeae459e97": {
+        "position": {
+          "x": 996,
+          "y": 121.6
+        }
+      },
+      "6539f299-cc17-4b6f-bd09-ad621c8418da": {
+        "position": {
+          "x": 15.2,
+          "y": 108
+        }
+      },
+      "TransferToQueue": {
+        "position": {
+          "x": 718.4,
+          "y": 90.4
+        }
+      },
+      "09876836-fa57-41e0-a182-06ae2b93a1d0": {
+        "position": {
+          "x": 241.6,
+          "y": 97.6
+        },
+        "dynamicParams": []
+      },
+      "SetQueue": {
+        "position": {
+          "x": 457.6,
+          "y": 94.4
+        },
+        "parameters": {
+          "AgentId": {
+            "useDynamic": true
+          }
+        },
+        "useDynamic": true
+      }
+    },
+    "Annotations": [],
+    "name": "ChatAgentRouting",
+    "description": "",
+    "type": "contactFlow",
+    "status": "published",
+    "hash": {}
+  },
+  "Actions": [
+    {
+      "Parameters": {},
+      "Identifier": "7d6d8d8c-4bb0-470e-afc4-59eeae459e97",
+      "Type": "DisconnectParticipant",
+      "Transitions": {}
+    },
+    {
+      "Parameters": {
+        "FlowLoggingBehavior": "Enabled"
+      },
+      "Identifier": "6539f299-cc17-4b6f-bd09-ad621c8418da",
+      "Type": "UpdateFlowLoggingBehavior",
+      "Transitions": {
+        "NextAction": "09876836-fa57-41e0-a182-06ae2b93a1d0"
+      }
+    },
+    {
+      "Parameters": {},
+      "Identifier": "TransferToQueue",
+      "Type": "TransferContactToQueue",
+      "Transitions": {
+        "NextAction": "7d6d8d8c-4bb0-470e-afc4-59eeae459e97",
+        "Errors": [
+          {
+            "NextAction": "7d6d8d8c-4bb0-470e-afc4-59eeae459e97",
+            "ErrorType": "QueueAtCapacity"
+          },
+          {
+            "NextAction": "7d6d8d8c-4bb0-470e-afc4-59eeae459e97",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "Attributes": {
+          "Agent-Id-From-Widget": "$.Attributes.HostedWidget-AgentId"
+        },
+        "TargetContact": "Current"
+      },
+      "Identifier": "09876836-fa57-41e0-a182-06ae2b93a1d0",
+      "Type": "UpdateContactAttributes",
+      "Transitions": {
+        "NextAction": "SetQueue",
+        "Errors": [
+          {
+            "NextAction": "SetQueue",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    },
+    {
+      "Parameters": {
+        "AgentId": "$.Attributes.Agent-Id-From-Widget"
+      },
+      "Identifier": "SetQueue",
+      "Type": "UpdateContactTargetQueue",
+      "Transitions": {
+        "NextAction": "TransferToQueue",
+        "Errors": [
+          {
+            "NextAction": "TransferToQueue",
+            "ErrorType": "NoMatchingError"
+          }
+        ]
+      }
+    }
+  ]
+}

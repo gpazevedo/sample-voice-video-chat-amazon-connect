@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>
+    // Embedded configuration (generated at build time for production)
+    // This acts as a fallback when config.json is not available
+    window.__EMBEDDED_CONFIG__ = {}; // placeholder — replaced by scripts/embed-config.js via npm run build:production
+    
+    // Smart fetch override: Try to fetch config.json first, fall back to embedded config
+    (function() {
+      const originalFetch = window.fetch;
+      window.fetch = function(url, options) {
+        const urlStr = typeof url === 'string' ? url : url.url || url.href;
+        
+        // Check if this is a config.json request
+        if (urlStr && (
+          urlStr === '/config.json' || 
+          urlStr === 'config.json' ||
+          urlStr.endsWith('/config.json') ||
+          urlStr.includes('config.json')
+        )) {
+          // Try to fetch config.json first (for local development)
+          return originalFetch.call(window, url, options)
+            .then(async response => {
+              if (response.ok) {
+                // Check if response is actually JSON (not HTML error page)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                  console.log('[Config] Using config.json from server (local development)');
+                  return response;
+                }
+                // If content-type is not JSON, it's likely an HTML error page
+                console.log('[Config] Received HTML instead of JSON, using embedded configuration');
+              }
+              // If fetch fails (404 in production) or returns HTML, use embedded config
+              console.log('[Config] Using embedded configuration (production)');
+              return Promise.resolve({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                headers: new Headers({
+                  'Content-Type': 'application/json'
+                }),
+                json: () => Promise.resolve(window.__EMBEDDED_CONFIG__),
+                text: () => Promise.resolve(JSON.stringify(window.__EMBEDDED_CONFIG__)),
+                clone: function() { return this; }
+              });
+            })
+            .catch(error => {
+              // Network error or CORS issue, use embedded config
+              console.log('[Config] Using embedded configuration (fallback)');
+              return Promise.resolve({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                headers: new Headers({
+                  'Content-Type': 'application/json'
+                }),
+                json: () => Promise.resolve(window.__EMBEDDED_CONFIG__),
+                text: () => Promise.resolve(JSON.stringify(window.__EMBEDDED_CONFIG__)),
+                clone: function() { return this; }
+              });
+            });
+        }
+        
+        return originalFetch.call(window, url, options);
+      };
+    })();
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.my.connect.aws; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.amazonaws.com https://*.amazoncognito.com https://*.chime.aws https://*.my.connect.aws https://*.cloudfront.net wss://*.chime.aws wss://*.transport.connect.us-east-1.amazonaws.com wss://*.transport.connect.us-west-2.amazonaws.com wss://*.transport.connect.af-south-1.amazonaws.com wss://*.transport.connect.ap-northeast-1.amazonaws.com wss://*.transport.connect.ap-northeast-2.amazonaws.com wss://*.transport.connect.ap-southeast-1.amazonaws.com wss://*.transport.connect.ap-southeast-2.amazonaws.com wss://*.transport.connect.ca-central-1.amazonaws.com wss://*.transport.connect.eu-central-1.amazonaws.com wss://*.transport.connect.eu-west-2.amazonaws.com wss://*.transport.connect.us-gov-west-1.amazonaws.com; worker-src 'self' blob:; media-src 'self' blob:;">
+  <title>Amazon Connect - Contact Us</title>
+  
+  <!-- Login Component Styles -->
+  <link rel="stylesheet" href="src/ui/login.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2d1b4e 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* App container will be populated by the application */
+    #app-container {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #e94560;
+      font-size: 18px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(233, 69, 96, 0.2);
+      border-top-color: #e94560;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Main UI after login */
+    .main-ui {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #1f2937;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      border: 1px solid rgba(233, 69, 96, 0.1);
+    }
+
+    .main-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: #ffffff;
+      padding: 30px 40px;
+      border-bottom: 2px solid rgba(233, 69, 96, 0.3);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .main-header h1 {
+      font-size: 32px;
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .phone-icon, .chat-icon {
+      font-size: 28px;
+      display: inline-block;
+    }
+
+    .main-header p {
+      opacity: 0.8;
+      font-size: 15px;
+      color: #cbd5e1;
+      margin: 0;
+    }
+
+    .main-content {
+      padding: 40px;
+      background: #1f2937;
+    }
+
+    .info-box {
+      background: rgba(15, 52, 96, 0.5);
+      border-left: 4px solid #e94560;
+      padding: 18px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .info-box p {
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .button-group {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    button {
+      padding: 18px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button:disabled::before {
+      display: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e94560 0%, #c72c48 100%);
+      color: white;
+      border: 1px solid rgba(233, 69, 96, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .status-section {
+      padding: 25px;
+      background: rgba(15, 52, 96, 0.3);
+      border-radius: 12px;
+      border: 2px solid rgba(233, 69, 96, 0.2);
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .status-label {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+
+    .status-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .status-value.active {
+      color: #10b981;
+    }
+
+    #video-container {
+      display: none;
+      margin-top: 30px;
+      padding: 25px;
+      background: rgba(15, 52, 96, 0.3);
+      border-radius: 12px;
+      border: 2px solid rgba(233, 69, 96, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    #video-container.active {
+      display: block;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .video-wrapper {
+      text-align: center;
+    }
+
+    .video-label {
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    video {
+      width: 100%;
+      max-height: 300px;
+      background: #0f172a;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid rgba(233, 69, 96, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    #remote-video {
+      object-fit: contain;
+      max-height: 400px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Chat widget tooltip */
+    .chat-widget-tooltip {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      background: linear-gradient(135deg, #e94560 0%, #c72c48 100%);
+      color: white;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
+      z-index: 9999;
+      max-width: 300px;
+      animation: slideInRight 0.5s ease-out, fadeOut 0.5s ease-out 4.5s;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-widget-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 20px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #c72c48;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+
+  </style>
+</head>
+<body>
+  <!-- App container - will be used by LoginComponent and main app -->
+  <div id="app-container">
+    <div class="loading">
+      <span class="spinner"></span>
+      <span>Loading application...</span>
+    </div>
+  </div>
+
+  <!-- Audio element for WebRTC -->
+  <audio id="audio-element" autoplay controls style="display: none;"></audio>
+
+  <!-- Load the application bundle -->
+  <script src="amazon-connect-web-app.js"></script>
+  
+  <script>
+    // Initialize the application with Cognito authentication
+    (async function() {
+      try {
+        // Fetch configuration from server
+        const response = await fetch('/config.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load configuration: HTTP ${response.status}`);
+        }
+        
+        const config = await response.json();
+        
+        if (config.error) {
+          throw new Error(config.error);
+        }
+
+        // Verify we're in Cognito authenticated mode
+        if (config.credentialMode !== 'cognito-authenticated') {
+          throw new Error('This page requires Cognito authenticated mode. Please set CREDENTIAL_MODE=cognito-authenticated in your .env file.');
+        }
+
+        // Store participant name globally (will be set after authentication)
+        let participantName = 'Customer'; // Default
+
+        // Create app configuration
+        const appConfig = {
+          region: config.region,
+          instanceId: config.instanceId,
+          contactFlowId: config.contactFlowId,
+          chatContactFlowId: config.chatContactFlowId,
+          credentialMode: config.credentialMode,
+          cognitoUserPoolId: config.cognitoUserPoolId,
+          cognitoClientId: config.cognitoClientId,
+          cognitoIdentityPoolId: config.cognitoIdentityPoolId,
+          participantDisplayName: participantName, // Will be updated after login
+          containerId: 'app-container',
+          enableVideo: config.enableVideo !== false,
+          enableChat: config.enableChat !== false,
+          enableFileSharing: config.enableFileSharing !== false,
+          maxFileSize: config.maxFileSize || 10485760
+        };
+
+        console.log('[App] Initializing with Cognito authentication...');
+        
+        // Create and initialize the app
+        // The app will automatically show the login screen
+        const app = new AmazonConnectWebApp.AmazonConnectApp(appConfig);
+        await app.initialize();
+        
+        console.log('[App] Application initialized successfully');
+        
+        // Get the participant name from the app (updated after authentication)
+        participantName = app.getParticipantDisplayName();
+        console.log('[App] Participant name:', participantName);
+        
+        // After successful initialization, show the main UI
+        showMainUI(app, participantName);
+        
+      } catch (error) {
+        console.error('[App] Initialization failed:', error);
+        
+        // Display error to user
+        const container = document.getElementById('app-container');
+        container.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px;">
+            <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px;">
+              <h2 style="color: #ef4444; margin-bottom: 20px;">⚠️ Initialization Failed</h2>
+              <p style="color: #374151; margin-bottom: 15px; line-height: 1.6;">${error.message}</p>
+              <button onclick="location.reload()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                Retry
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    })();
+
+    // Show main UI after successful authentication and initialization
+    function showMainUI(app, participantName) {
+      console.log('[showMainUI] Rendering main UI...');
+      const container = document.getElementById('app-container');
+      console.log('[showMainUI] Container element:', container);
+      
+      if (!container) {
+        console.error('[showMainUI] ERROR: app-container element not found!');
+        return;
+      }
+      
+      // Clear any existing content (including login component)
+      container.innerHTML = '';
+      
+      // Make container visible (LoginComponent.hide() sets display: none)
+      container.style.display = 'block';
+      console.log('[showMainUI] Container made visible, now rendering main UI...');
+      
+      // Track chat widget state
+      let chatWidgetInitialized = false;
+      let chatWidgetScriptElement = null; // Track the chat widget script element
+      let isCallInitiating = false; // Track if a call is currently being initiated
+      let callStartTime = null;
+      let durationInterval = null;
+      
+      function startDurationTimer() {
+        callStartTime = Date.now();
+        if (durationInterval) clearInterval(durationInterval);
+        durationInterval = setInterval(() => {
+          if (callStartTime) {
+            const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            statusDuration.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+          }
+        }, 1000);
+      }
+
+      function stopDurationTimer() {
+        if (durationInterval) {
+          clearInterval(durationInterval);
+          durationInterval = null;
+        }
+        callStartTime = null;
+        statusDuration.textContent = '00:00';
+      }
+      
+      // Function to show chat widget tooltip
+      function showChatWidgetTooltip() {
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'chat-widget-tooltip';
+        tooltip.innerHTML = '💬 Click the chat icon to start a conversation with an agent';
+        document.body.appendChild(tooltip);
+        
+        // Remove tooltip after animation completes (5 seconds)
+        setTimeout(() => {
+          tooltip.remove();
+        }, 5000);
+      }
+      
+      // Function to completely remove chat widget
+      function removeChatWidget() {
+        console.log('[removeChatWidget] Removing Amazon Connect Chat Widget...');
+        
+        // Get config for chat widget document ID
+        fetch('/config.json').then(res => res.json()).then(config => {
+          // Remove the chat widget iframe and container
+          const chatContainer = document.getElementById(config.chatDocumentId);
+          if (chatContainer) {
+            chatContainer.remove();
+            console.log('[removeChatWidget] Removed chat container');
+          }
+          
+          // Remove any chat widget elements (the widget creates multiple elements)
+          const chatElements = document.querySelectorAll('[id^="amazon-connect-chat"]');
+          chatElements.forEach(el => {
+            el.remove();
+            console.log('[removeChatWidget] Removed chat element:', el.id);
+          });
+          
+          // Remove the script element
+          if (chatWidgetScriptElement) {
+            chatWidgetScriptElement.remove();
+            chatWidgetScriptElement = null;
+            console.log('[removeChatWidget] Removed chat widget script');
+          }
+          
+          // Clear the amazon_connect global function
+          if (window.amazon_connect) {
+            delete window.amazon_connect;
+            console.log('[removeChatWidget] Cleared amazon_connect global');
+          }
+          
+          console.log('[removeChatWidget] Chat widget completely removed');
+        });
+      }
+      
+      container.innerHTML = `
+        <div class="main-ui">
+          <div class="main-header">
+            <div class="header-content">
+              <img src="AmazonConnectLogo.png" alt="Amazon Connect" class="header-logo">
+              <div class="header-text">
+                <h1><span class="phone-icon">📞</span> <span class="chat-icon">💬</span> Amazon Connect</h1>
+                <p>Authenticated and ready to connect</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="main-content">
+            <div class="info-box">
+              <p>✅ Successfully authenticated with Cognito. You can now start a WebRTC call or chat session.</p>
+            </div>
+
+            <div class="button-group">
+              <button id="start-call-btn" class="btn-success">📞 Start Voice Call</button>
+              <button id="start-video-call-btn" class="btn-success">📹 Start Video Call</button>
+              <button id="start-chat-btn" class="btn-primary" disabled>💬 Start Chat with the Same Agent</button>
+              <button id="end-call-btn" class="btn-danger" disabled>End Call</button>
+            </div>
+
+            <div class="status-section">
+              <div class="status-label">Call Duration</div>
+              <div id="status-duration" class="status-value">00:00</div>
+            </div>
+
+            <div id="video-container">
+              <div class="video-grid">
+                <div class="video-wrapper">
+                  <div class="video-label">Your Video</div>
+                  <video id="local-video" autoplay muted playsinline></video>
+                </div>
+                <div class="video-wrapper">
+                  <div class="video-label">Agent Video</div>
+                  <video id="remote-video" autoplay playsinline></video>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Set up event listeners
+      const startCallBtn = document.getElementById('start-call-btn');
+      const startVideoCallBtn = document.getElementById('start-video-call-btn');
+      const startChatBtn = document.getElementById('start-chat-btn');
+      const endCallBtn = document.getElementById('end-call-btn');
+      const statusDuration = document.getElementById('status-duration');
+      const videoContainer = document.getElementById('video-container');
+
+      startCallBtn.addEventListener('click', async () => {
+        try {
+          // Prevent multiple simultaneous call initiations
+          if (isCallInitiating) {
+            console.log('[startCallBtn] Call already being initiated, ignoring click');
+            return;
+          }
+          
+          isCallInitiating = true;
+          startCallBtn.disabled = true;
+          startVideoCallBtn.disabled = true;
+          
+          await app.startCall({ enableVideo: false });
+          startDurationTimer();
+          endCallBtn.disabled = false;
+          
+          isCallInitiating = false;
+          
+          // Enable chat button once call is active
+          startChatBtn.disabled = false;
+        } catch (error) {
+          isCallInitiating = false;
+          startCallBtn.disabled = false;
+          startVideoCallBtn.disabled = false;
+          alert('Failed to start call: ' + error.message);
+          console.error(error);
+        }
+      });
+
+      startVideoCallBtn.addEventListener('click', async () => {
+        try {
+          // Prevent multiple simultaneous call initiations
+          if (isCallInitiating) {
+            console.log('[startVideoCallBtn] Call already being initiated, ignoring click');
+            return;
+          }
+          
+          isCallInitiating = true;
+          startCallBtn.disabled = true;
+          startVideoCallBtn.disabled = true;
+          
+          videoContainer.classList.add('active');
+          await app.startCall({ enableVideo: true });
+          startDurationTimer();
+          endCallBtn.disabled = false;
+          
+          isCallInitiating = false;
+          
+          // Enable chat button once call is active
+          startChatBtn.disabled = false;
+        } catch (error) {
+          videoContainer.classList.remove('active');
+          isCallInitiating = false;
+          startCallBtn.disabled = false;
+          startVideoCallBtn.disabled = false;
+          alert('Failed to start video call: ' + error.message);
+          console.error(error);
+        }
+      });
+
+      startChatBtn.addEventListener('click', async () => {
+        try {
+          const agentId = app.getAgentId ? app.getAgentId() : null;
+          console.log('[startChatBtn] Attempting to start chat with agent ID:', agentId);
+          
+          if (!agentId) {
+            console.warn('[startChatBtn] No agent ID available yet');
+            alert('Please wait for the agent to answer the call.');
+            return;
+          }
+
+          // Get config for chat widget
+          const response = await fetch('/config.json');
+          const config = await response.json();
+
+          if (!config.chatSnippetId) {
+            console.error('[startChatBtn] Chat snippet ID not configured');
+            alert('Chat is not configured. Please contact support.');
+            return;
+          }
+
+          if (!config.chatDocumentId) {
+            console.error('[startChatBtn] Chat document ID not configured');
+            alert('Chat document ID is not configured. Please contact support.');
+            return;
+          }
+
+          console.log('[startChatBtn] Initializing Amazon Connect Chat Widget...');
+          console.log('[startChatBtn] Instance Alias:', config.instanceAlias);
+          console.log('[startChatBtn] Chat Snippet ID:', config.chatSnippetId.substring(0, 20) + '...');
+          console.log('[startChatBtn] Chat Document ID:', config.chatDocumentId);
+          console.log('[startChatBtn] Agent ID:', agentId);
+
+          // Load Amazon Connect Chat Widget
+          (function (w, d, x, id) {
+            s = d.createElement('script');
+            s.src = `https://${config.instanceAlias}.my.connect.aws/connectwidget/static/amazon-connect-chat-interface-client.js`;
+            s.async = 1;
+            s.id = id;
+            d.getElementsByTagName('head')[0].appendChild(s);
+            w[x] = w[x] || function () { (w[x].ac = w[x].ac || []).push(arguments) };
+            chatWidgetScriptElement = s; // Store reference to script element
+            console.log('[startChatBtn] Chat widget script loaded from:', s.src);
+          })(window, document, 'amazon_connect', config.chatDocumentId);
+          
+          // Configure chat widget
+          amazon_connect('styles', { 
+            iconType: 'CHAT', 
+            openChat: { color: '#ffffff', backgroundColor: '#dc2626' }, 
+            closeChat: { color: '#ffffff', backgroundColor: '#dc2626' } 
+          });
+          amazon_connect('snippetId', config.chatSnippetId);
+          amazon_connect('customStyles', { 
+            global: { frameWidth: '400px', frameHeight: '600px' } 
+          });
+          amazon_connect('supportedMessagingContentTypes', [
+            'text/plain', 
+            'text/markdown', 
+            'application/vnd.amazonaws.connect.message.interactive', 
+            'application/vnd.amazonaws.connect.message.interactive.response'
+          ]);
+          
+          // Set customer display name from authenticated user
+          amazon_connect('customerDisplayName', function(callback) { 
+            callback(participantName); 
+          });
+          
+          // Pass agent ID as contact attribute for routing
+          amazon_connect('contactAttributes', { AgentId: agentId });
+
+          startChatBtn.disabled = true;
+          chatWidgetInitialized = true;
+          
+          console.log('[startChatBtn] ✅ Chat widget initialized successfully');
+          
+          // Show helpful tooltip to inform user about the chat widget
+          showChatWidgetTooltip();
+        } catch (error) {
+          alert('Failed to start chat: ' + error.message);
+          console.error(error);
+        }
+      });
+
+      endCallBtn.addEventListener('click', async () => {
+        try {
+          console.log('[endCallBtn] Ending call...');
+          
+          stopDurationTimer();
+          videoContainer.classList.remove('active');
+          
+          // Reset agent ID to disable chat button
+          const webrtcManager = app.getWebRTCManager();
+          if (webrtcManager) {
+            console.log('[endCallBtn] Resetting agent ID to null');
+            webrtcManager.setAgentId(null);
+          }
+          
+          // Remove chat widget completely if it was initialized
+          if (chatWidgetInitialized) {
+            removeChatWidget();
+          }
+          
+          // Reset chat widget flag so it can be reinitialized with new agent
+          chatWidgetInitialized = false;
+          
+          await app.endCall();
+          startCallBtn.disabled = false;
+          startVideoCallBtn.disabled = false;
+          startChatBtn.disabled = true;
+          endCallBtn.disabled = true;
+        } catch (error) {
+          alert('Failed to end call: ' + error.message);
+          console.error(error);
+        }
+      });
+
+      // Set up call ended callback
+      const webrtcManager = app.getWebRTCManager();
+      if (webrtcManager) {
+        webrtcManager.onCallEnded(() => {
+          console.log('[onCallEnded] WebRTC call ended - cleaning up');
+          
+          stopDurationTimer();
+          videoContainer.classList.remove('active');
+          
+          // Reset agent ID to disable chat button
+          console.log('[onCallEnded] Resetting agent ID to null');
+          webrtcManager.setAgentId(null);
+          
+          // Remove chat widget completely if it was initialized
+          if (chatWidgetInitialized) {
+            removeChatWidget();
+          }
+          
+          // Reset chat widget flag so it can be reinitialized with new agent
+          chatWidgetInitialized = false;
+          
+          startCallBtn.disabled = false;
+          startVideoCallBtn.disabled = false;
+          startChatBtn.disabled = true;
+          endCallBtn.disabled = true;
+        });
+      }
+    }
+  </script>
+</body>
+</html>
