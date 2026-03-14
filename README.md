@@ -82,7 +82,7 @@ npm install
 ### Step III: Configure environment
 ```bash
 cp .env.example .env
-# Edit .env: AWS_ACCOUNT_ID, AWS_REGION, AMAZON_CONNECT_INSTANCE_ID, AMAZON_CONNECT_INSTANCE_ALIAS, AMAZON_CONNECT_QUEUE_ID
+# Edit .env: AWS_ACCOUNT_ID, AWS_REGION, AMAZON_CONNECT_INSTANCE_ID, AMAZON_CONNECT_INSTANCE_ALIAS, AMAZON_CONNECT_QUEUE_ID (BasicQueue ID in the Amazon Connect instance)
 # Other parameters auto-populate after deployment
 ```
 
