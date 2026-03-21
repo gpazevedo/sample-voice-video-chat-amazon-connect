@@ -1,4 +1,4 @@
-# Streamline Unified Voice, Video, and Chat Communications with Amazon Connect
+# Build Unified Voice, Video, and Chat Communications with Amazon Connect
 
 Discover how to build a unified customer engagement solution using Amazon Connect.
 
