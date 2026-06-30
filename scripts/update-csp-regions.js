@@ -48,7 +48,7 @@ const wsTransportEndpoints = AMAZON_CONNECT_REGIONS
 // Build the complete CSP
 const cspContent = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.my.connect.aws",
+  "script-src 'self' 'unsafe-inline' https://*.my.connect.aws",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self' data:",

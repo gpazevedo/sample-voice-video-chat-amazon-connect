@@ -311,7 +311,7 @@ function handler(event) {
   
   // Content-Security-Policy
   headers['content-security-policy'] = { 
-    value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.my.connect.aws; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.amazonaws.com https://*.amazoncognito.com https://*.chime.aws https://*.my.connect.aws https://*.cloudfront.net wss://*.chime.aws ${wsTransportEndpoints}; worker-src 'self' blob:; media-src 'self' blob:;" 
+    value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.my.connect.aws; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.amazonaws.com https://*.amazoncognito.com https://*.chime.aws https://*.my.connect.aws https://*.cloudfront.net wss://*.chime.aws ${wsTransportEndpoints}; worker-src 'self' blob:; media-src 'self' blob:;" 
   };
   
   // Referrer-Policy
