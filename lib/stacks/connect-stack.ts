@@ -15,6 +15,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EnvironmentConfig } from '../config/config-schema';
 import { ConnectSecurity } from './connect-security';
+import { ConnectRouting } from './connect-routing';
 
 /**
  * Properties for the ConnectStack.
@@ -56,6 +57,9 @@ export class ConnectStack extends cdk.Stack {
   
   /** Security profile for agents */
   public readonly security: ConnectSecurity;
+
+  /** Routing profile for agents */
+  public readonly routing: ConnectRouting;
 
   /** Map of contact flow names to their IDs */
   public readonly contactFlowIds: Map<string, string>;
@@ -118,6 +122,11 @@ export class ConnectStack extends cdk.Stack {
     }
 
     this.security = new ConnectSecurity(this, 'Security', { instanceArn: this.instanceArn });
+
+    this.routing = new ConnectRouting(this, 'Routing', {
+      instanceArn: this.instanceArn,
+      queueArn: `${this.instanceArn}/queue/${config.connect.queueId}`,
+    });
 
     // Export instance ARN
     new cdk.CfnOutput(this, 'InstanceArnOutput', {
