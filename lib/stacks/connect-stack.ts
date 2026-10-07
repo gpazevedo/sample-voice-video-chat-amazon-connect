@@ -14,6 +14,7 @@ import * as connect from 'aws-cdk-lib/aws-connect';
 import * as fs from 'fs';
 import * as path from 'path';
 import { EnvironmentConfig } from '../config/config-schema';
+import { ConnectSecurity } from './connect-security';
 import { ConnectRouting } from './connect-routing';
 
 /**
@@ -54,6 +55,9 @@ export class ConnectStack extends cdk.Stack {
   /** Amazon Connect instance ARN */
   public readonly instanceArn: string;
   
+  /** Security profile for agents */
+  public readonly security: ConnectSecurity;
+
   /** Routing profile for agents */
   public readonly routing: ConnectRouting;
 
@@ -116,6 +120,8 @@ export class ConnectStack extends cdk.Stack {
         `Chat contact flow not found at ${chatFlowPath}. Skipping Chat flow deployment.`
       );
     }
+
+    this.security = new ConnectSecurity(this, 'Security', { instanceArn: this.instanceArn });
 
     this.routing = new ConnectRouting(this, 'Routing', {
       instanceArn: this.instanceArn,
