@@ -60,6 +60,9 @@ export interface EnvironmentConfig {
     /** Optional existing Connect instance ARN */
     instanceArn?: string;
     
+    /** ID of the existing queue (BasicQueue) the contact flows route to */
+    queueId: string;
+
     /** Path to contact flow definition files */
     contactFlowsPath: string;
   };

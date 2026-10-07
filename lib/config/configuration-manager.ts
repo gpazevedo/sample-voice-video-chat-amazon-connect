@@ -205,6 +205,9 @@ export class ConfigurationManager {
     if (!config.connect) {
       errors.push('Missing required section: connect');
     } else {
+      if (!config.connect.queueId) {
+        errors.push('Missing required field: connect.queueId');
+      }
       if (!config.connect.contactFlowsPath) {
         errors.push('Missing required field: connect.contactFlowsPath');
       }

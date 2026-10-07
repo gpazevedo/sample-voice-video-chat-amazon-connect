@@ -58,6 +58,7 @@ const cdkConfig = {
   },
   connect: {
     instanceArn: connectInstanceArn,
+    queueId: process.env.AMAZON_CONNECT_QUEUE_ID,
     contactFlowsPath: './contact-flows'
   },
   tags: {
